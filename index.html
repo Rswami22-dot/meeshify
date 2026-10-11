@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Meesho Low Shipping Image Generator</title>
+    <style>
+        :root {
+            --primary: #9e2a2b;
+            --bg: #f8f9fa;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 40px 20px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        h1 { color: var(--primary); margin-bottom: 5px; font-size: 24px; }
+        p { color: #666; margin-bottom: 25px; font-size: 14px; }
+        .control-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        select, input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            box-sizing: border-box;
+            background: #fff;
+        }
+        .preview-box {
+            margin-top: 25px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+        canvas {
+            max-width: 100%;
+            height: auto;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .btn-download {
+            margin-top: 20px;
+            background-color: #2ec4b6;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-download:hover { background-color: #23a99d; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Meesho Low Shipping Image Generator</h1>
+    <p>Optimize image boundaries instantly to lower calculated volumetric shipping charges.</p>
+    
+    <div class="control-group">
+        <label for="imageLoader">Upload Product Image (Transparent PNG or Clean Background):</label>
+        <input type="file" id="imageLoader" accept="image/*">
+    </div>
+
+    <div class="control-group">
+        <label for="paddingSelect">Select Visual Cushion (Product Size in Frame):</label>
+        <select id="paddingSelect">
+            <option value="0.80">80% Size (Highly Recommended for High Charges)</option>
+            <option value="0.85" selected>85% Size (Standard Optimization)</option>
+            <option value="0.90">90% Size (Maximum allowed size)</option>
+        </select>
+    </div>
+
+    <div class="preview-box" id="previewBox">
+        <label>Optimized 1:1 Canvas Preview:</label>
+        <canvas id="imageCanvas"></canvas>
+        <button class="btn-download" id="downloadBtn">Download Optimized Image</button>
+    </div>
+</div>
+
+<script>
+    const imageLoader = document.getElementById('imageLoader');
+    const paddingSelect = document.getElementById('paddingSelect');
+    const canvas = document.getElementById('imageCanvas');
+    const ctx = canvas.getContext('2d');
+    const previewBox = document.getElementById('previewBox');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    let loadedImage = null;
+
+    imageLoader.addEventListener('change', handleImage, false);
+    paddingSelect.addEventListener('change', processImage, false);
+
+    function handleImage(e) {
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            loadedImage = new Image();
+            loadedImage.onload = function() {
+                previewBox.style.display = 'flex';
+                processImage();
+            }
+            loadedImage.src = event.target.result;
+        }
+        reader.readAsDataURL(e.target.files[0]);
+    }
+
+    function processImage() {
+        if (!loadedImage) return;
+
+        // Force Meesho's strict 1:1 crisp grid standard resolution
+        const targetSize = 1200; 
+        canvas.width = targetSize;
+        canvas.height = targetSize;
+
+        // Fill background with clean, algorithmic-friendly pure digital white
+        ctx.fillStyle = "#FFFFFF";
+        ctx.fillRect(0, 0, targetSize, targetSize);
+
+        // Read the user-selected scale constraint 
+        const targetScaleFactor = parseFloat(paddingSelect.value);
+        const maxDimension = targetSize * targetScaleFactor;
+
+        // Calculate aspect ratios to scale without stretching the item
+        let imgWidth = loadedImage.width;
+        let imgHeight = loadedImage.height;
+        let renderWidth, renderHeight;
+
+        if (imgWidth > imgHeight) {
+            renderWidth = maxDimension;
+            renderHeight = (imgHeight / imgWidth) * maxDimension;
+        } else {
+            renderHeight = maxDimension;
+            renderWidth = (imgWidth / imgHeight) * maxDimension;
+        }
+
+        // Compute perfect central alignment coordinates
+        const xOffset = (targetSize - renderWidth) / 2;
+        const yOffset = (targetSize - renderHeight) / 2;
+
+        // Draw image onto canvas mapping to safe zones
+        ctx.drawImage(loadedImage, xOffset, yOffset, renderWidth, renderHeight);
+    }
+
+    downloadBtn.addEventListener('click', function() {
+        const dataURL = canvas.toDataURL('image/jpeg', 0.95);
+        const link = document.createElement('a');
+        link.download = 'meesho-optimized-catalog.jpg';
+        link.href = dataURL;
+        link.click();
+    });
+</script>
+
+</body>
+</html>
